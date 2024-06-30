@@ -5,7 +5,7 @@ require('dotenv').config();
 exports.auth = (req, res, next) => {
     try {
         // Extract JWT token
-        const token = req.body.token || req.cookies.token || (req.header('Authorization') && req.header('Authorization').replace('Bearer', '').trim());
+        const token = req.body.token || req.cookies.CommunityConnect;
         if (!token) {
             return res.status(401).json({
                 success: false,
@@ -32,7 +32,7 @@ exports.auth = (req, res, next) => {
         });
     }
 };
-
+  
 // Authorization middleware for community member
 exports.isCommunityMember = (req, res, next) => {
     try {
@@ -78,6 +78,26 @@ exports.isCommunityOrganization = (req, res, next) => {
             return res.status(403).json({
                 success: false,
                 message: 'This is a protected route for community organizations only',
+            });
+        }
+        next();
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: 'User role is not matching',
+            error: error.message,
+        });
+    }
+};
+
+// Authorization middleware for community business or organization
+exports.isCommunityBusinessOrOrganization = (req, res, next) => {
+    try {
+        const allowedRoles = ['community business', 'community organization'];
+        if (!allowedRoles.includes(req.user.role)) {
+            return res.status(403).json({
+                success: false,
+                message: 'This is a protected route for community businesses or organizations only',
             });
         }
         next();

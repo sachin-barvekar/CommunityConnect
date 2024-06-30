@@ -7,6 +7,7 @@ const volunteerOpportunitySchema = new mongoose.Schema({
   date: { type: Date, required: true },
   location: { type: String, required: true },
   image: { type: String, required: true },
+  postalCode: { type: String, required: true }, // New postalCode field
 }, { timestamps: true });
 
 module.exports = mongoose.model('VolunteerOpportunity', volunteerOpportunitySchema);

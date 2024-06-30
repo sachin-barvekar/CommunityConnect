@@ -17,8 +17,17 @@ const eventSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  organizer: {
+  image: {
     type: String,
+    required: false,
+  },
+  postalCode: {
+    type: String,
+    required: true,
+  },
+  organizer: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
     required: true,
   },
 });

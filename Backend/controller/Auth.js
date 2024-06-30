@@ -5,13 +5,13 @@ require('dotenv').config();
 
 exports.signup = async (req, res) => {
   try {
-    const { name, email, password, role, mobile } = req.body;
+    const { name, email, password, role, mobile, postalCode } = req.body;
 
     // Check if all required fields are provided
-    if (!name || !email || !password || !role || !mobile) {
+    if (!name || !email || !password || !role || !mobile || !postalCode) {
       return res.status(400).json({
         status: 400,
-        message: "Please fill all fields",
+        message: "Please fill all fields including postal code",
       });
     }
 
@@ -42,47 +42,33 @@ exports.signup = async (req, res) => {
       });
     }
 
-    // Hash the password
+    // Attempt to create user
     const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Create user with hashed password and generated avatar image URL
     const user = await User.create({
       name,
       email,
       password: hashedPassword,
       role,
       mobile,
+      postalCode,
       image: `https://api.dicebear.com/5.x/initials/svg?seed=${encodeURIComponent(name)}`,
     });
 
-    // Generate JWT token
-    const payload = {
-      email: user.email,
-      id: user._id,
-      role: user.role,
-    };
-
-    const token = jwt.sign(payload, process.env.JWT_SECRET, {
-      expiresIn: '2h',
-    });
-
-    // Remove password from user object
-    user.password = undefined;
-  
-    const options = {
-      expires: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // 3 days
-      httpOnly: true,
-    };
-
-    // Set cookie and send response
-    res.cookie('community_cookie', token, options).status(201).json({
-      success: true,
-      message: "User created successfully",
-      token,
-      data: user,
-    });
+    return res.status(200).json({
+      success:true,
+      message: "user created successfully"
+  })
   } catch (error) {
     console.error("Error creating user:", error);
+
+    // Check if error is due to duplicate mobile number
+    if (error.code === 11000 && error.keyPattern && error.keyPattern.mobile) {
+      return res.status(400).json({
+        status: 400,
+        message: "Mobile number already used",
+      });
+    }
+
     return res.status(500).json({
       status: 500,
       message: "An error occurred while creating the user",
@@ -121,7 +107,8 @@ exports.login = async (req, res) => {
       const payload = {
         email: user.email,
         id: user._id,
-        role: user.role
+        role: user.role,
+        postalCode:user.postalCode
       };
 
       let token = jwt.sign(payload, process.env.JWT_SECRET, {

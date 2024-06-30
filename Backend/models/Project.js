@@ -15,6 +15,9 @@ const projectSchema = new mongoose.Schema({
   },
   endDate: {
     type: Date,
+  },
+  postalCode: {
+    type: String,
     required: true,
   },
   status: {
@@ -22,12 +25,15 @@ const projectSchema = new mongoose.Schema({
     enum: ['Not Started', 'In Progress', 'Completed'],
     default: 'Not Started',
   },
-  members: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
-    },
-  ],
+  organizer: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true,
+  },
+  image: {
+    type: String,
+    required: true,
+  },
 }, { timestamps: true });
 
 const Project = mongoose.model('Project', projectSchema);

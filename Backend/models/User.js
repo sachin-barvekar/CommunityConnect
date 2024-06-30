@@ -13,6 +13,7 @@ const userSchema = new mongoose.Schema({
   mobile: {
     type: String,
     required: true,
+    unique: true,
   },
   role: {
     type: String,
@@ -26,6 +27,10 @@ const userSchema = new mongoose.Schema({
   image: {
     type: String,
     required: false,
+  },
+  postalCode: {
+    type: String,
+    required: true,
   },
 });
 
