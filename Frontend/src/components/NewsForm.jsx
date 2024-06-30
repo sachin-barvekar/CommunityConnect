@@ -1,28 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 
-export default function EventFormPage({ onSubmit, onClose, event }) {
+export default function NewsFormPage({ onSubmit, onClose, news }) {
   const [formData, setFormData] = useState({
     title: '',
-    description: '',
-    date: '',
-    location: '',
+    content: '',
     imageFile: null,
   });
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (event) {
+    if (news) {
       setFormData({
-        title: event.title || '',
-        description: event.description || '',
-        date: event.date ? event.date.split('T')[0] : '',
-        location: event.location || '',
-        imageFile: event.image || null, // Assuming event.image contains the image URL
+        title: news.title || '',
+        content: news.content || '',
+        imageFile: news.image || null, // Assuming news.image contains the image URL
       });
     }
-  }, [event]);
+  }, [news]);
 
   const handleChange = (e) => {
     const { id, value } = e.target;
@@ -46,30 +42,28 @@ export default function EventFormPage({ onSubmit, onClose, event }) {
     try {
       const formDataWithFile = new FormData();
       formDataWithFile.append('title', formData.title);
-      formDataWithFile.append('description', formData.description);
-      formDataWithFile.append('date', formData.date);
-      formDataWithFile.append('location', formData.location);
+      formDataWithFile.append('content', formData.content);
       if (formData.imageFile instanceof File) {
         formDataWithFile.append('image', formData.imageFile);
       }
 
-      const response = await fetch(event ? `/api/v1/events/${event._id}` : '/api/v1/events', {
-        method: event ? 'PUT' : 'POST',
+      const response = await fetch(news ? `/api/v1/news/${news._id}` : '/api/v1/news', {
+        method: news ? 'PUT' : 'POST',
         body: formDataWithFile,
       });
 
       if (!response.ok) {
-        throw new Error('Failed to submit event');
+        throw new Error('Failed to submit news');
       }
 
       const data = await response.json();
-      onSubmit(data.event);
+      onSubmit(data.news);
       onClose();
-      alert(event ? 'Event updated successfully' : 'Event created successfully');
+      alert(news ? 'News updated successfully' : 'News created successfully');
       window.location.reload();
     } catch (error) {
-      console.error('Error submitting event:', error.message);
-      setError('Failed to submit event. Please try again.');
+      console.error('Error submitting news:', error.message);
+      setError('Failed to submit news. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -78,7 +72,7 @@ export default function EventFormPage({ onSubmit, onClose, event }) {
   return (
     <div className="p-0 flex flex-col items-center">
       <div className="flex justify-center items-center mb-2 w-full max-w-lg mx-auto">
-        <h1 className="text-3xl text-center font-semibold my-7">{event ? 'Update Event' : 'Add Event'}</h1>
+        <h1 className="text-3xl text-center font-semibold my-7">{news ? 'Update News' : 'Add News'}</h1>
       </div>
       <form onSubmit={handleSubmit} className="flex flex-col gap-5 w-full sm:max-w-lg lg:max-w-xl mx-auto">
         <input
@@ -91,32 +85,15 @@ export default function EventFormPage({ onSubmit, onClose, event }) {
           required
         />
         <textarea
-          placeholder="Description"
+          placeholder="Content"
           className="border p-3 rounded-lg"
-          id="description"
-          value={formData.description}
-          onChange={handleChange}
-          required
-        />
-        <input
-          type="date"
-          className="border p-3 rounded-lg"
-          id="date"
-          value={formData.date}
-          onChange={handleChange}
-          required
-        />
-        <input
-          type="text"
-          placeholder="Location"
-          className="border p-3 rounded-lg"
-          id="location"
-          value={formData.location}
+          id="content"
+          value={formData.content}
           onChange={handleChange}
           required
         />
         <label htmlFor="imageFile" className="block text-sm font-medium text-gray-700">
-          {event && !formData.imageFile ? 'Existing Image' : 'Upload Image'}
+          {news && !formData.imageFile ? 'Existing Image' : 'Upload Image'}
         </label>
         <input
           type="file"
@@ -130,7 +107,7 @@ export default function EventFormPage({ onSubmit, onClose, event }) {
           className="bg-slate-700 text-white p-3 rounded-lg uppercase hover:opacity-95 disabled:opacity-80"
           disabled={loading}
         >
-          {loading ? 'Submitting...' : event ? 'Update Event' : 'Add Event'}
+          {loading ? 'Submitting...' : news ? 'Update News' : 'Add News'}
         </button>
       </form>
       {error && (
@@ -139,15 +116,15 @@ export default function EventFormPage({ onSubmit, onClose, event }) {
         </div>
       )}
       <div className="flex gap-2 mt-5">
-        <p>Back to Events?</p>
-        <button onClick={onClose} className="text-blue-700">Go to Events</button>
+        <p>Back to News?</p>
+        <button onClick={onClose} className="text-blue-700">Go to News</button>
       </div>
     </div>
   );
 }
 
-EventFormPage.propTypes = {
+NewsFormPage.propTypes = {
   onSubmit: PropTypes.func.isRequired,
   onClose: PropTypes.func.isRequired,
-  event: PropTypes.object,
+  news: PropTypes.object,
 };
