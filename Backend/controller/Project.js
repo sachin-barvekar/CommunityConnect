@@ -8,7 +8,6 @@ function isFileSupported(type, supportedTypes){
 
 async function uploadImageToCloudinary(image, folder){
   const options = { folder };
-  console.log("temp", image.tempFilePath);
   const result = await cloudinary.uploader.upload(image.tempFilePath, options);
   return result;
 }
@@ -77,7 +76,8 @@ exports.getAllProjects = async (req, res) => {
 // Get project by ID
 exports.getProjectById = async (req, res) => {
   try {
-    const project = await Project.findById(req.params.id).populate('organizer', 'name');
+    const userId = req.user.id;
+    const project = await Project.find({organizer: userId}).populate('organizer', 'name');
     if (!project) {
       return res.status(404).json({ success: false, message: 'Project not found' });
     }
@@ -91,8 +91,22 @@ exports.getProjectById = async (req, res) => {
 // Update project by ID
 exports.updateProjectById = async (req, res) => {
   try {
-    const { title, description, startDate, endDate, status, image } = req.body;
+    const { title, description, startDate, endDate, status } = req.body;
 
+    
+     //cloudinary code
+     const image = req.files.image;
+     //validation
+     const supportedTypes = ["jpg","jpeg","png"];
+     const fileType = image.name.split('.')[1].toLowerCase();
+     if(!isFileSupported(fileType, supportedTypes)){ 
+         return res.status(400).json({
+             success: false,
+             message:"File format not supported"
+         })
+     }
+
+     const response = await uploadImageToCloudinary(image, "CommunityConnect");
     // Validate input
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -118,7 +132,7 @@ exports.updateProjectById = async (req, res) => {
     };
 
     if (image) {
-      updateData.image = image;
+      updateData.image = response.secure_url;
     }
 
     const updatedProject = await Project.findByIdAndUpdate(req.params.id, updateData, { new: true });

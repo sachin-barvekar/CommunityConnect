@@ -120,8 +120,7 @@ export default function Profile() {
       </div>
       <Link
         onClick={handleSignOut}
-        className="bg-slate-700 text-white p-3 rounded-lg uppercase text-center hover:opacity-95 mt-4 block"
-      >
+        className="bg-slate-700 text-white p-3 rounded-lg uppercase text-center hover:opacity-95 mt-4 block">
         Sign out
       </Link>
     </div>

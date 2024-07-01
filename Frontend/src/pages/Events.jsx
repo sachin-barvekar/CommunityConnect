@@ -83,6 +83,7 @@ export default function Events() {
     }
     setIsFormOpen(false);
     setEventToUpdate(null);
+    
   };
 
   const handleDeleteEvent = async (eventId) => {

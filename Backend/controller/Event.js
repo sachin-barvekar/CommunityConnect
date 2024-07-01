@@ -8,7 +8,6 @@ function isFileSupported(type, supportedTypes){
 
 async function uploadImageToCloudinary(image, folder){
     const options = { folder };
-    console.log("temp", image.tempFilePath);
     const result = await cloudinary.uploader.upload(image.tempFilePath, options);
     return result;
 }
@@ -89,8 +88,11 @@ exports.updateEventById = async (req, res) => {
     try {
         const { title, description, date, location} = req.body;
 
+        let image;
+        let response;
         //cloudinary code
-        const image = req.files.image;
+        if(req.files.image){
+          image = req.files.image;
         //validation
         const supportedTypes = ["jpg","jpeg","png"];
         const fileType = image.name.split('.')[1].toLowerCase();
@@ -100,8 +102,8 @@ exports.updateEventById = async (req, res) => {
                 message:"File format not supported"
             })
         }
-        const response = await uploadImageToCloudinary(image, "CommunityConnect");
-
+        response = await uploadImageToCloudinary(image, "CommunityConnect");
+    }
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             return res.status(400).json({ errors: errors.array() });
@@ -144,7 +146,6 @@ exports.deleteEventById = async (req, res) => {
         }
 
         await Event.findByIdAndDelete(req.params.id);
-
         res.status(200).json({ success: true, message: 'Event deleted successfully' });
     } catch (error) {
         console.error('Error deleting event:', error);

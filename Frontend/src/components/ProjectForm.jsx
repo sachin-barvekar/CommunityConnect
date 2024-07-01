@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 
-export default function ProjectFormPage({ onSubmit, onClose }) {
+export default function ProjectFormPage({ onSubmit, onClose, project }) {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -11,7 +11,29 @@ export default function ProjectFormPage({ onSubmit, onClose }) {
     imageFile: null,
   });
   const [error, setError] = useState(null);
-  const [isLoading, setIsLoading] = useState(false); 
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    if (project) {
+      setFormData({
+        title: project.title || '',
+        description: project.description || '',
+        startDate: project.startDate ? project.startDate.split('T')[0] : '',
+        endDate: project.endDate ? project.endDate.split('T')[0] : '',
+        status: project.status || '',
+        imageFile: project.image || null,
+      });
+    } else {
+      setFormData({
+        title: '',
+        description: '',
+        startDate: '',
+        endDate: '',
+        status: '',
+        imageFile: null,
+      });
+    }
+  }, [project]);
 
   const handleChange = (e) => {
     const { id, value } = e.target;
@@ -31,7 +53,7 @@ export default function ProjectFormPage({ onSubmit, onClose }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsLoading(true); 
+    setIsLoading(true);
     try {
       const formDataWithFile = new FormData();
       formDataWithFile.append('title', formData.title);
@@ -44,8 +66,8 @@ export default function ProjectFormPage({ onSubmit, onClose }) {
         formDataWithFile.append('endDate', formData.endDate);
       }
 
-      const response = await fetch('/api/v1/projects', {
-        method: 'POST',
+      const response = await fetch(project ? `/api/v1/projects/${project._id}` : '/api/v1/projects', {
+        method: project ? 'PUT' : 'POST',
         body: formDataWithFile,
       });
 
@@ -56,7 +78,7 @@ export default function ProjectFormPage({ onSubmit, onClose }) {
       const data = await response.json();
       onSubmit(data.project);
       onClose();
-      alert('Project created successfully');
+      alert(project ? 'Project updated successfully' : 'Project created successfully');
       window.location.reload();
     } catch (error) {
       console.error('Error submitting project:', error.message);
@@ -69,7 +91,7 @@ export default function ProjectFormPage({ onSubmit, onClose }) {
   return (
     <div className="p-0 flex flex-col items-center">
       <div className="flex justify-center items-center mb-2 w-full max-w-2xl mx-auto">
-        <h1 className="text-3xl text-center font-semibold my-7">Add Project</h1>
+        <h1 className="text-3xl text-center font-semibold my-7">{project ? 'Update Project' : 'Add Project'}</h1>
       </div>
       <form onSubmit={handleSubmit} className="flex flex-col gap-5 w-full sm:max-w-2xl lg:max-w-3xl mx-auto">
         <input
@@ -130,7 +152,7 @@ export default function ProjectFormPage({ onSubmit, onClose }) {
           </>
         )}
         <label htmlFor="imageFile" className="block text-sm font-medium text-gray-700">
-          Upload Image
+          {project && !formData.imageFile ? 'Existing Image' : 'Upload Image'}
         </label>
         <input
           type="file"
@@ -138,14 +160,13 @@ export default function ProjectFormPage({ onSubmit, onClose }) {
           accept="image/*"
           className="border p-3 rounded-lg"
           onChange={handleImageChange}
-          required
         />
         <button
           type="submit"
-          className={`bg-slate-700 text-white p-3 rounded-lg uppercase hover:opacity-95 disabled:opacity-80 ${isLoading ? 'opacity-80 cursor-not-allowed' : ''}`}
+          className="bg-slate-700 text-white p-3 rounded-lg uppercase hover:opacity-95 disabled:opacity-80"
           disabled={isLoading}
         >
-          {isLoading ? 'Adding Project...' : 'Add Project'}
+          {isLoading ? 'Submitting...' : project ? 'Update Project' : 'Add Project'}
         </button>
       </form>
       {error && (
@@ -164,4 +185,5 @@ export default function ProjectFormPage({ onSubmit, onClose }) {
 ProjectFormPage.propTypes = {
   onSubmit: PropTypes.func.isRequired,
   onClose: PropTypes.func.isRequired,
+  project: PropTypes.object,
 };

@@ -19,7 +19,7 @@ export default function EventFormPage({ onSubmit, onClose, event }) {
         description: event.description || '',
         date: event.date ? event.date.split('T')[0] : '',
         location: event.location || '',
-        imageFile: event.image || null, // Assuming event.image contains the image URL
+        imageFile: event.image,
       });
     }
   }, [event]);

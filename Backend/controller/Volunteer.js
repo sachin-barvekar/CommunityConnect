@@ -71,7 +71,8 @@ exports.getAllVolunteerOpportunities = async (req, res) => {
 // Get volunteer opportunity by ID
 exports.getVolunteerOpportunityById = async (req, res) => {
   try {
-    const volunteerOpportunity = await VolunteerOpportunity.findById(req.params.id).populate('organization', 'name');
+    const userId = req.user.id;
+    const volunteerOpportunity = await VolunteerOpportunity.find({organization: userId}).populate('organization', 'name');
     if (!volunteerOpportunity) {
       return res.status(404).json({ success: false, message: 'Volunteer opportunity not found' });
     }
@@ -85,7 +86,20 @@ exports.getVolunteerOpportunityById = async (req, res) => {
 // Update volunteer opportunity by ID
 exports.updateVolunteerOpportunityById = async (req, res) => {
   try {
-    const { title, description, date, location, image } = req.body;
+    const { title, description, date, location} = req.body;
+     // Cloudinary image upload
+     const image = req.files.image;
+     const supportedTypes = ["jpg", "jpeg", "png"];
+     const fileType = image.name.split('.').pop().toLowerCase();
+ 
+     if (!isFileSupported(fileType, supportedTypes)) {
+       return res.status(400).json({
+         success: false,
+         message: "File format not supported",
+       });
+     }
+ 
+     const response = await uploadImageToCloudinary(image, "CommunityConnect");
 
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -103,7 +117,7 @@ exports.updateVolunteerOpportunityById = async (req, res) => {
 
     const updatedVolunteerOpportunity = await VolunteerOpportunity.findByIdAndUpdate(
       req.params.id,
-      { title, description, date, location, image },
+      { title, description, date, location, image:response.secure_url },
       { new: true }
     );
 

@@ -8,7 +8,6 @@ function isFileSupported(type, supportedTypes) {
 
 async function uploadImageToCloudinary(image, folder) {
     const options = { folder };
-    console.log("temp", image.tempFilePath);
     const result = await cloudinary.uploader.upload(image.tempFilePath, options);
     return result;
 }

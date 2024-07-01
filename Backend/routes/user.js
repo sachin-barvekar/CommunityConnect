@@ -3,7 +3,7 @@ const router = express.Router();
 
 const {signup, login } = require("../controller/Auth");
 const {getProfile} = require("../controller/Users");
-const { auth, isCommunityOrganization, isCommunityBusiness, isCommunityBusinessOrOrganization} = require('../middleware/auth');
+const { auth, isCommunityOrganization, isCommunityBusinessOrOrganization} = require('../middleware/auth');
 const {createEvent,getAllEvents,getEventById,updateEventById,deleteEventById} = require("../controller/Event");
 const {createProject, getAllProjects, getProjectById, updateProjectById, deleteProjectById } = require("../controller/Project");
 const {createNews, getAllNews, getNewsById, updateNewsById, deleteNewsById } = require("../controller/News");
@@ -33,16 +33,16 @@ router.delete("/news/:id", auth, deleteNewsById);
 // Project routes
 router.post('/projects', auth,  isCommunityBusinessOrOrganization, createProject);
 router.get('/projects', auth, getAllProjects);
-router.get('/projects/:id', auth, getProjectById);
+router.get('/projectsbyuser', auth, getProjectById);
 router.put('/projects/:id', auth, isCommunityBusinessOrOrganization, updateProjectById);
 router.delete('/projects/:id', auth, isCommunityBusinessOrOrganization, deleteProjectById);
 
 // //Voluteer page route
-router.post("/voluteers",auth, isCommunityOrganization, createVolunteerOpportunity);
-router.get("/voluteers", auth, getAllVolunteerOpportunities);
-router.get("/voluteers/:id", getVolunteerOpportunityById);
-router.put("/voluteers/:id", auth, isCommunityOrganization, updateVolunteerOpportunityById);
-router.delete("/voluteers/:id",auth, isCommunityOrganization, deleteVolunteerOpportunityById);
+router.post("/volunteers",auth, isCommunityOrganization, createVolunteerOpportunity);
+router.get("/volunteers", auth, getAllVolunteerOpportunities);
+router.get("/volunteersbyuser",auth, getVolunteerOpportunityById);
+router.put("/volunteers/:id", auth, isCommunityOrganization, updateVolunteerOpportunityById);
+router.delete("/volunteers/:id",auth, isCommunityOrganization, deleteVolunteerOpportunityById);
 
 router.post('/signout', Signout);
 

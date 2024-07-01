@@ -45,7 +45,7 @@ export default function Header() {
                 </li>
                 <li>
                   <NavLink to="/volunteer-opportunities" activeClassName="active-link" className="text-xl text-slate-700 hover:underline">
-                    Volunteers
+                    Volunteer
                   </NavLink>
                 </li>
                 <li>
@@ -87,7 +87,7 @@ export default function Header() {
               </NavLink>
             </li>
             <li>
-              <NavLink to="/volunteers" activeClassName="active-link" className="text-xl text-slate-700 hover:underline">
+              <NavLink to="/volunteer-opportunities" activeClassName="active-link" className="text-xl text-slate-700 hover:underline">
                 Volunteers
               </NavLink>
             </li>

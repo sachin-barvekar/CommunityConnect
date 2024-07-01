@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 
-export default function VolunteerForm({ onSubmit, onClose }) {
+export default function VolunteerForm({ onSubmit, onClose, volunteerOpportunity }) {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -11,6 +11,18 @@ export default function VolunteerForm({ onSubmit, onClose }) {
   });
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (volunteerOpportunity) {
+      setFormData({
+        title: volunteerOpportunity.title || '',
+        description: volunteerOpportunity.description || '',
+        date: volunteerOpportunity.date ? volunteerOpportunity.date.split('T')[0] : '',
+        location: volunteerOpportunity.location || '',
+        imageFile: volunteerOpportunity.image || null,
+      });
+    }
+  }, [volunteerOpportunity]);
 
   const handleChange = (e) => {
     const { id, value } = e.target;
@@ -30,17 +42,19 @@ export default function VolunteerForm({ onSubmit, onClose }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true); // Set loading to true
+    setLoading(true);
     try {
       const formDataWithFile = new FormData();
       formDataWithFile.append('title', formData.title);
       formDataWithFile.append('description', formData.description);
       formDataWithFile.append('date', formData.date);
       formDataWithFile.append('location', formData.location);
-      formDataWithFile.append('image', formData.imageFile);
+      if (formData.imageFile instanceof File) {
+        formDataWithFile.append('image', formData.imageFile);
+      }
 
-      const response = await fetch('/api/v1/voluteers', {
-        method: 'POST',
+      const response = await fetch(volunteerOpportunity ? `/api/v1/volunteers/${volunteerOpportunity._id}` : '/api/v1/volunteers', {
+        method: volunteerOpportunity ? 'PUT' : 'POST',
         body: formDataWithFile,
       });
 
@@ -49,22 +63,22 @@ export default function VolunteerForm({ onSubmit, onClose }) {
       }
 
       const data = await response.json();
-      onSubmit(data.volunteerOpportunity); // Assuming the API returns the created volunteer opportunity object
-      onClose(); // Close the form after successful submission
-      alert('Volunteer opportunity created successfully');
-      window.location.reload(); // Reload the page
+      onSubmit(data.volunteerOpportunity);
+      onClose();
+      alert(volunteerOpportunity ? 'Volunteer opportunity updated successfully' : 'Volunteer opportunity created successfully');
+      window.location.reload();
     } catch (error) {
       console.error('Error submitting volunteer opportunity:', error.message);
-      setError('Failed to submit volunteer opportunity. Please try again.'); // Set error state
+      setError('Failed to submit volunteer opportunity. Please try again.');
     } finally {
-      setLoading(false); // Set loading to false
+      setLoading(false);
     }
   };
 
   return (
     <div className="p-0 flex flex-col items-center">
       <div className="flex justify-center items-center mb-2 w-full max-w-lg mx-auto">
-        <h1 className="text-3xl text-center font-semibold my-7">Add Volunteer Opportunity</h1>
+        <h1 className="text-3xl text-center font-semibold my-7">{volunteerOpportunity ? 'Update Volunteer Opportunity' : 'Add Volunteer Opportunity'}</h1>
       </div>
       <form onSubmit={handleSubmit} className="flex flex-col gap-5 w-full sm:max-w-lg lg:max-w-xl mx-auto">
         <input
@@ -86,7 +100,6 @@ export default function VolunteerForm({ onSubmit, onClose }) {
         />
         <input
           type="date"
-          placeholder="Date"
           className="border p-3 rounded-lg"
           id="date"
           value={formData.date}
@@ -102,9 +115,8 @@ export default function VolunteerForm({ onSubmit, onClose }) {
           onChange={handleChange}
           required
         />
-    
         <label htmlFor="imageFile" className="block text-sm font-medium text-gray-700">
-          Upload Image
+          {volunteerOpportunity && !formData.imageFile ? 'Existing Image' : 'Upload Image'}
         </label>
         <input
           type="file"
@@ -112,14 +124,13 @@ export default function VolunteerForm({ onSubmit, onClose }) {
           accept="image/*"
           className="border p-3 rounded-lg"
           onChange={handleImageChange}
-          required
         />
         <button
-          type="submit" 
+          type="submit"
           className="bg-slate-700 text-white p-3 rounded-lg uppercase hover:opacity-95 disabled:opacity-80"
-          disabled={loading} // Disable the button while loading
+          disabled={loading}
         >
-          {loading ? 'Submitting...' : 'Add Volunteer Opportunity'}
+          {loading ? 'Submitting...' : volunteerOpportunity ? 'Update Volunteer Opportunity' : 'Add Volunteer Opportunity'}
         </button>
       </form>
       {error && (
@@ -138,4 +149,5 @@ export default function VolunteerForm({ onSubmit, onClose }) {
 VolunteerForm.propTypes = {
   onSubmit: PropTypes.func.isRequired,
   onClose: PropTypes.func.isRequired,
+  volunteerOpportunity: PropTypes.object,
 };
