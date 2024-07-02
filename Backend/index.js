@@ -5,8 +5,6 @@ const  cloudinaryConnect  = require('./config/cloudinary');
 const userRoutes = require("./routes/user");
 const app = express();
 var cors = require("cors");
-import path from 'path';
-
 const PORT = process.env.PORT || 3000;
 
 // CORS Configuration
@@ -27,14 +25,9 @@ app.use(fileUpload({
 })); //middleware to interact files and express with server(file-upload used for upload files on server)
 
 app.use(express.json());
-const __dirname = path.resolve();
-app.use(express.static(path.join(__dirname, '/Frontend/dist')));
+
 app.use("/api/v1", userRoutes);
 
-app.get('*', (req, res)=>{
-  res.sendFile(path.join(__dirname, 'Frontend','dist','index.html'));
-}
-)
 app.listen(PORT, () => {
   console.log(`THE SERVER IS UP AND RUNNING AT PORT ${PORT}`);
 });
